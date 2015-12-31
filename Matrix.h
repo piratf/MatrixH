@@ -102,7 +102,6 @@ public:
     Matrix<T> inline row(vecSizeT index) const;
 
     Matrix<double> toDouble() const;
-    // Matrix<double> Matrix<std::complex<T> >::toDouble() const;
     Matrix<double> inv() const;
     Matrix<T> cov() const;
     Matrix<double> hess() const;
@@ -129,7 +128,6 @@ public:
     bool inline isSingular() const;
 
     std::complex<double> det() const;
-    std::vector<Matrix> luDecomposition();
     Matrix<T> getTransposition();
 
     std::vector<T>& operator [](vecSizeT index);
@@ -284,6 +282,9 @@ T Matrix<T>::vectorDotProduct(const std::vector<T> lhs, std::vector<T> rhs) {
     return ans;
 }
 
+/**
+ * 矩阵的均值
+ */
 template <typename T>
 T Matrix<T>::avg(const std::vector<T> &vec) {
     T sum;
@@ -293,6 +294,9 @@ T Matrix<T>::avg(const std::vector<T> &vec) {
     return sum / vec.size();
 }
 
+/**
+ * 矩阵的协方差矩阵
+ */
 template <typename T>
 Matrix<T> Matrix<T>::cov() const {
     Matrix mat = *this;
@@ -333,61 +337,6 @@ Matrix<T> Matrix<T>::cov() const {
 template <typename T>
 Matrix<T> Matrix<T>::cov(const Matrix<T> &input) {
     return input.cov();
-}
-
-/**
- * 矩阵的LU分解
- * 结果有误差，正在改进
- * @author piratf
- * @return vector<Matrix>，0是L矩阵，1是U矩阵, 如果出错返回空vector
- */
-template <typename T>
-std::vector<Matrix<T> > Matrix<T>::luDecomposition() {
-#ifndef ISSQUARE
-#define ISSQUARE
-    assert(data.size() > 0);
-    assert(isSquare());
-#endif
-
-    double tmp = 0;
-    vecSizeT s = data.size();                //矩阵的阶数
-    // vecSizeT n = s * s;                //矩阵内总数据个数
-
-    Matrix L(s, s);
-    Matrix U(s, s);
-
-    for (vecSizeT i = 0; i != s; i++) {
-        for (vecSizeT j = 0; j != s; j++) {
-            if (i == j)
-                L.data[i][j] = 1;
-            if (i < j)
-                L.data[i][j] = 0;
-            if (i > j)
-                U.data[i][j] = 0;
-
-            U.data[0][j] = data[0][j];
-            L.data[i][0] = data[i][0] / U.data[0][0];
-        }
-    }
-
-    for (vecSizeT k = 1; k != s; k++) {
-        for (vecSizeT j = k; j != s; j++) {
-            tmp = 0;
-            for (vecSizeT m = 0; m < k; m++) {
-                tmp += L.data[k][m] * U.data[m][j];
-            }
-            U.data[k][j] = data[k][j] - tmp;
-        }
-        for (vecSizeT i = k + 1; i != s; i++) {
-            tmp = 0;
-            for (vecSizeT m = 0; m != k; m++) {
-                tmp += L.data[i][m] * U.data[m][k];
-            }
-            L.data[i][k] = ( data[i][k] - tmp ) / U.data[k][k];
-        }
-    }
-
-    return std::vector<Matrix> {L, U};
 }
 
 /**
@@ -501,11 +450,17 @@ Matrix<double> Matrix<T>::inv() const {
     return ans;
 }
 
+/**
+ * 矩阵的行数
+ */
 template <typename T>
 vecSizeT Matrix<T>::row() const {
     return data.size();
 }
 
+/**
+ * 矩阵的列数
+ */
 template <typename T>
 vecSizeT Matrix<T>::col() const {
     if (data.size()) {
@@ -516,7 +471,7 @@ vecSizeT Matrix<T>::col() const {
 }
 
 /**
- * 带行号取某一行
+ * 按行号取某一行，返回新的矩阵
  */
 template <typename T>
 Matrix<T> Matrix<T>::row(vecSizeT index) const {
@@ -541,6 +496,9 @@ const std::vector<T>& Matrix<T>::operator [](vecSizeT index) const {
     return data[index];
 }
 
+/**
+ * 生成当前矩阵的 Hessenberg 形式，以新矩阵返回
+ */
 template <typename T>
 Matrix<double> Matrix<T>::hess() const {
 #ifndef ISSQUARE
@@ -748,7 +706,7 @@ Matrix<std::complex<double>> Matrix<T>::eig(double eps, unsigned LOOP) const {
     // 返回一个复数
     Matrix<std::complex<double> >res(n, 1);
     for (vecSizeT i = 0; i < ret.row(); ++i) {
-        // 判断是否是复数
+        // 判断是否是复数类型
         bool flag = ComplexType<T>::isComplex;
         if (flag) {
             res[i][0] = std::complex<double>(static_cast<std::complex<T> >(ret[i][0]).real(), static_cast<std::complex<T> >(ret[i][1]).real());
