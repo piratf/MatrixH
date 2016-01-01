@@ -62,7 +62,6 @@ public:
 
     printMessage() {
         std::cout << message << std::endl;
-        fflush(stdout);
     }
 
 private:
