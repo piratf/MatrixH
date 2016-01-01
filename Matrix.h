@@ -439,10 +439,11 @@ Matrix<double> Matrix<T>::inv() const {
             TMat[i].swap(TMat[k]);
             ans[i].swap(ans[k]);
         }
+        assert(cond2().real() < 1e11);
         //判断主元是否为0, 若是, 则矩阵A不是满秩矩阵,不存在逆矩阵
-        if (cond2().real() > 1e10) {
-            throw (Exception("ERROR** Matrix::inv -> there is no inverse matrix!"));
-        }
+        // if (cond2().real() > 1e10) {
+        //     throw (Exception("ERROR** Matrix::inv -> there is no inverse matrix!"));
+        // }
         //消去A的第i列除去i行以外的各行元素
         temp = TMat[i][i];
         for (j = 0; j < len; j++) {
@@ -956,13 +957,8 @@ Matrix<double> Matrix<T>::div(const Matrix<T> &other) const {
     assert(other.row() == other.col());
 #endif
 
-    try {
-        return this ->toDouble() * other.inv();
-    } catch (NoInverseException e) {
-        throw;
-    }
+    return this ->toDouble() * other.inv();
 }
-
 /**
  * 矩阵右除
  */
@@ -974,11 +970,7 @@ Matrix<double> Matrix<T>::rdiv(const Matrix<T> &other) const {
     assert(other.row() == other.col());
 #endif
 
-    try {
-        return this ->inv() * other.toDouble();
-    } catch (NoInverseException e) {
-        throw;
-    }
+    return this ->inv() * other.toDouble();
 }
 
 /**
@@ -992,12 +984,8 @@ Matrix<double> Matrix<T>::operator / (const Matrix<T> &other) const {
     assert(data.size());
     assert(other.row() == other.col());
 #endif
-    try {
-        return div(other);
-    } catch (NoInverseException e) {
-        // 如果没有 逆，无法做除法
-        e.printMessage();
-    }
+
+    return div(other);
 }
 
 /**
@@ -1011,12 +999,8 @@ Matrix<double> Matrix<T>::operator /= (const Matrix<T> &other) {
     assert(data.size());
     assert(other.row() == other.col());
 #endif
-    try {
-        return *this = div(other);
-    } catch (NoInverseException e) {
-        // 如果没有 逆，无法做除法
-        e.printMessage();
-    }
+
+    return *this = div(other);
 }
 
 /**
@@ -1030,12 +1014,8 @@ Matrix<double> Matrix<T>::operator % (const Matrix<T> &other) const {
     assert(data.size());
     assert(other.row() == other.col());
 #endif
-    try {
-        return rdiv(other);
-    } catch (NoInverseException e) {
-        // 如果没有 逆，无法做除法
-        e.printMessage();
-    }
+
+    return rdiv(other);
 }
 
 /**
@@ -1172,7 +1152,7 @@ Matrix<T> Matrix<T>::operator = (const Matrix<T> &other) {
  * 移动矩阵
  */
 template <typename T>
-Matrix<T> Matrix<T>::operator = (Matrix<T> &&other) {
+Matrix<T> Matrix<T>::operator = (Matrix<T> && other) {
     data.swap(other.getData());
     return *this;
 }

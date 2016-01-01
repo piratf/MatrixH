@@ -4,17 +4,62 @@
 #ifdef __WIN32
 #include <windows.h>
 #endif
-#include "Matrix.h"
+#include "Matrixomp.h"
 using namespace std;
 
 // 矩阵大小
 // 超过 100 以后在普通电脑上求逆和除法会比较慢
-const unsigned D = 100;
+const unsigned D = 5;
 
-int main() {
-    ios::sync_with_stdio(false);
-    freopen("test.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+void AccurateTest() {
+#ifdef __WIN32
+    LARGE_INTEGER freq;
+    LARGE_INTEGER start_t, stop_t;
+    LARGE_INTEGER freq1;
+    LARGE_INTEGER start_t1, stop_t1;
+    double exe_time;
+    QueryPerformanceFrequency(&freq);
+    // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
+    cerr << "The frequency of your pc is  " << freq.QuadPart << endl;
+    QueryPerformanceCounter(&start_t);
+    QueryPerformanceCounter(&stop_t);
+    exe_time = 1e3 * (stop_t.QuadPart - start_t.QuadPart) / freq.QuadPart;
+    cerr << "inv use Time: " << exe_time << endl;
+    // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
+
+
+    QueryPerformanceFrequency(&freq1);
+    // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
+    cerr << "The frequency of your pc is  " << freq1.QuadPart << endl;
+    QueryPerformanceCounter(&start_t1);
+    QueryPerformanceCounter(&stop_t1);
+    exe_time = 1e3 * (stop_t1.QuadPart - start_t1.QuadPart) / freq1.QuadPart;
+    cerr << "Use Time: " << exe_time << endl;
+    // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
+#endif
+}
+
+void test() {
+    srand((unsigned)time(NULL));
+
+    Matrix<double> m(D, D), n(D, D);
+    for (unsigned i = 0; i < D; ++i) {
+        for (unsigned j = 0; j < D; ++j) {
+            m[i][j] = rand() % 10;
+            // cin >> m[i][j];
+        }
+    }
+    for (unsigned i = 0; i < D; ++i) {
+        for (unsigned j = 0; j < D; ++j) {
+            n[i][j] = rand() % 10;
+            // cin >> n[i][j];
+        }
+    }
+    cout << m << endl;
+    cout << m.inv() << endl;
+}
+
+void testWithPrint() {
     srand((unsigned)time(NULL));
 
     Matrix<double> m(D, D), n(D, D);
@@ -46,35 +91,6 @@ int main() {
     cerr << "operator -" << endl;
     cout << m - n << endl;
 
-#ifdef __WIN32
-    Matrix<double> c(m.row(), n.row());
-    Matrix<double> d(m.row(), n.row());
-    LARGE_INTEGER freq;
-    LARGE_INTEGER start_t, stop_t;
-    LARGE_INTEGER freq1;
-    LARGE_INTEGER start_t1, stop_t1;
-    double exe_time;
-    QueryPerformanceFrequency(&freq);
-    // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
-    cerr << "The frequency of your pc is  " << freq.QuadPart << endl;
-    QueryPerformanceCounter(&start_t);
-    m / n;
-    QueryPerformanceCounter(&stop_t);
-    exe_time = 1e3 * (stop_t.QuadPart - start_t.QuadPart) / freq.QuadPart;
-    cerr << "inv use Time: " << exe_time << endl;
-    // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
-
-
-    QueryPerformanceFrequency(&freq1);
-    // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
-    cerr << "The frequency of your pc is  " << freq1.QuadPart << endl;
-    QueryPerformanceCounter(&start_t1);
-    m.smul(d, n);
-    QueryPerformanceCounter(&stop_t1);
-    exe_time = 1e3 * (stop_t1.QuadPart - start_t1.QuadPart) / freq1.QuadPart;
-    cerr << "Use Time: " << exe_time << endl;
-    // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
-#endif
 
 
     cerr << "operator *" << endl;
@@ -103,5 +119,15 @@ int main() {
     cout << m.cond2() << endl;
     cerr << "eye" << endl;
     cout << Matrix<double>::eye(D, D) << endl;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    freopen("test.txt", "r", stdin);
+    freopen("output.txt", "w", stdout);
+
+    // testWithPrint();
+    test();
+
     return 0;
 }

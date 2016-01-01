@@ -4,7 +4,8 @@
 所有方法放在一个头文件中实现，只需要 include 头文件即可，便于使用。
 
 编译指令：g++ -std=c++11 -O3
-对于 `Matrixomp.h` 编译指令：g++ -std=c++11 -O3 --openmp 使 openmp 生效
+
+<!-- 对于 `Matrixomp.h` 编译指令：g++ -std=c++11 -O3 --openmp 使 openmp 生效 -->
 
 方法详见头文件类声明部分，详细注释在实现部分
 
