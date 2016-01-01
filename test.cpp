@@ -1,10 +1,11 @@
 #include <iostream>
 #include <complex>
+#include <map>
 #include <time.h>
 #ifdef __WIN32
 #include <windows.h>
 #endif
-#include "Matrixomp.h"
+#include "Matrix.h"
 using namespace std;
 
 // 矩阵大小
@@ -37,26 +38,6 @@ void AccurateTest() {
     cerr << "Use Time: " << exe_time << endl;
     // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
 #endif
-}
-
-void test() {
-    srand((unsigned)time(NULL));
-
-    Matrix<double> m(D, D), n(D, D);
-    for (unsigned i = 0; i < D; ++i) {
-        for (unsigned j = 0; j < D; ++j) {
-            m[i][j] = rand() % 10;
-            // cin >> m[i][j];
-        }
-    }
-    for (unsigned i = 0; i < D; ++i) {
-        for (unsigned j = 0; j < D; ++j) {
-            n[i][j] = rand() % 10;
-            // cin >> n[i][j];
-        }
-    }
-    cout << m << endl;
-    cout << m.inv() << endl;
 }
 
 void testWithPrint() {
@@ -121,12 +102,30 @@ void testWithPrint() {
     cout << Matrix<double>::eye(D, D) << endl;
 }
 
+void testRandnWithMap() {
+    std::map<int, int> hist;
+    for (int n = 0; n < 10000; ++n) {
+        // cout << Matrix<double>::randn() << endl;
+        ++hist[std::round(Matrix<double>::randn())];
+    }
+    for (auto p : hist) {
+        std::cout << std::fixed << std::setprecision(1) << std::setw(2)
+                  << p.first << ' ' 
+                  << std::string(p.second / 200, '*') << '\n';
+    }
+}
+
+void test() {
+    cout << Matrix<int>::rand(5, 10) << endl;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     freopen("test.txt", "r", stdin);
     freopen("output.txt", "w", stdout);
 
     // testWithPrint();
+    // testRandnWithMap();
     test();
 
     return 0;

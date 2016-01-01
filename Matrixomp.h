@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef MATRIXOMP_H
+#define MATRIXOMP_H
 
 #include <iostream>
 #include <cmath>
@@ -10,14 +10,11 @@
 #include <algorithm>
 #include <complex>
 #include <iomanip>
-#include <random>
+#include <omp.h>
 using std::cout;
 using std::endl;
 
 using vecSizeT = size_t;
-
-// 单例随机数生成器
-std::mt19937 *_genPtr;
 
 // 辅助代码
 // =========================================
@@ -95,15 +92,6 @@ public:
     Matrix(vecSizeT _x, vecSizeT _y);
     Matrix(std::vector<std::vector<T> > dvec);
 
-    static void inline initRand();
-    static T inline randn();
-    static Matrix<T> inline randn(vecSizeT n);
-    static Matrix<T> inline randn(vecSizeT r, vecSizeT c);
-
-    static T inline rand();
-    static Matrix<T> inline rand(vecSizeT n);
-    static Matrix<T> inline rand(vecSizeT r, vecSizeT c);
-
     void inline clear();
     void inline swap(Matrix<T> &rhs) {
         data.swap(rhs.getData());
@@ -112,10 +100,9 @@ public:
     std::vector<std::vector<T> >& getData();
     const std::vector<std::vector<T> >& getData() const ;
 
+    Matrix<T> inline cut(vecSizeT rs, vecSizeT re, vecSizeT cs, vecSizeT ce) const;
     vecSizeT inline col() const;
     vecSizeT inline row() const;
-
-    Matrix<T> inline cut(vecSizeT rs, vecSizeT re, vecSizeT cs, vecSizeT ce) const;
     Matrix<T> inline row(vecSizeT index) const;
 
     Matrix<double> toDouble() const;
@@ -206,7 +193,6 @@ public:
 
 private:
     std::vector< std::vector<T> > data;
-    static std::mt19937 gen;
 };
 
 /**
@@ -287,6 +273,7 @@ Matrix<T> Matrix<T>::getTransposition() const {
     vecSizeT sizeCol = data[0].size();
 
     Matrix tran(sizeCol, sizeRow);
+    #pragma omp parallel for
     for (vecSizeT i = 0; i < sizeRow; ++i) {
         for (vecSizeT j = 0; j < sizeCol; ++j) {
             tran.data[j][i] = data[i][j];
@@ -337,20 +324,23 @@ Matrix<T> Matrix<T>::cov() const {
     auto mat = this ->getTransposition();
     std::vector<T> avgVec;
     // 对于每一行求其均值
-    for (auto &row : mat.data) {
-        avgVec.push_back(avg(row));
+    vecSizeT n = row();
+    for (vecSizeT i = 0; i < n; ++i) {
+        avgVec.push_back(avg(data[i]));
     }
     // 获得协方差矩阵参数
     Matrix temp(sizeRow, sizeCol);
-    for (vecSizeT i = 0; i != sizeRow; ++i) {
-        for (vecSizeT j = 0; j != sizeCol; ++j) {
+    #pragma omp parallel for
+    for (vecSizeT i = 0; i < sizeRow; ++i) {
+        for (vecSizeT j = 0; j < sizeCol; ++j) {
             temp.data[i][j] = mat.data[i][j] - avgVec[i];
         }
     }
     // 获得协方差矩阵
     Matrix cov(sizeRow, sizeRow);
-    for (vecSizeT i = 0; i != sizeRow; ++i) {
-        for (vecSizeT j = 0; j != sizeRow; ++j) {
+    #pragma omp parallel for
+    for (vecSizeT i = 0; i < sizeRow; ++i) {
+        for (vecSizeT j = 0; j < sizeRow; ++j) {
             cov.data[i][j] = Matrix<T>::vectorDotProduct(temp.data[i], temp.data[j]) / (sizeCol - 1);
         }
     }
@@ -398,6 +388,7 @@ std::complex<double> Matrix<T>::det() const {
     // 所有特征根的乘积
     auto e = eig();
     std::complex<double> ret = e[0];
+    #pragma omp parallel for
     for (vecSizeT i = 1; i < data.size(); ++i) {
         ret *= e[i];
     }
@@ -438,12 +429,12 @@ Matrix<double> Matrix<T>::inv() const {
     }
     //初始化ans矩阵为单位阵
     Matrix<double> ans = Matrix<double>::eye(row(), col());
-
-    for (i = 0; i < len; i++) {
+    #pragma omp parallel for private(maxVal, temp)
+    for (vecSizeT i = 0; i < len; i++) {
         //寻找主元
         maxVal = TMat[i][i];
         k = i;
-        for (j = i + 1; j < len; j++) {
+        for (vecSizeT j = i + 1; j < len; j++) {
             if (std::abs(TMat[j][i]) > std::abs(maxVal)) {
                 maxVal = TMat[j][i];
                 k = j;
@@ -454,24 +445,22 @@ Matrix<double> Matrix<T>::inv() const {
             TMat[i].swap(TMat[k]);
             ans[i].swap(ans[k]);
         }
-        assert(cond2().real() < 1e11);
         //判断主元是否为0, 若是, 则矩阵A不是满秩矩阵,不存在逆矩阵
-        // if (cond2().real() > 1e10) {
-        //     throw (Exception("ERROR** Matrix::inv -> there is no inverse matrix!"));
-        // }
+        assert(cond2().real() < 1e11);
         //消去A的第i列除去i行以外的各行元素
         temp = TMat[i][i];
-        for (j = 0; j < len; j++) {
+        for (vecSizeT j = 0; j < len; j++) {
             TMat[i][j] = TMat[i][j] / temp;     //主对角线上的元素变为1
             ans[i][j] = ans[i][j] / temp;       //伴随计算
         }
         // 遍历行
-        for (j = 0; j < len; j++) {
+        #pragma omp parallel for
+        for (vecSizeT j = 0; j < len; j++) {
             // 不是第i行
             if (j != i) {
                 temp = TMat[j][i];
                 // 第j行元素 - i行元素 * j列i行元素
-                for (k = 0; k < len; k++) {
+                for (vecSizeT k = 0; k < len; k++) {
                     TMat[j][k] -= TMat[i][k] * temp;
                     ans[j][k] -= ans[i][k] * temp;
                 }
@@ -547,11 +536,12 @@ Matrix<double> Matrix<T>::hess() const {
     Matrix<double> ret(n, n);
     T temp = 0;
     vecSizeT max;
-    for (k = 1; k < n - 1; ++k) {
+    #pragma omp parallel for
+    for (vecSizeT k = 1; k < n - 1; ++k) {
         i = k - 1;
         max = k;
         temp = std::abs(A[k][i]);
-        for (j = k + 1; j < n; ++j) {
+        for (vecSizeT j = k + 1; j < n; ++j) {
             if (temp < std::abs(A[j][i])) {
                 temp = std::abs(A[j][i]);
                 max = j;
@@ -561,18 +551,18 @@ Matrix<double> Matrix<T>::hess() const {
         i = max;
         if (ret[0][0]) {
             if (i != k) {
-                for (j = k - 1; j < n; ++j) {
+                for (vecSizeT j = k - 1; j < n; ++j) {
                     temp = A[i][j];
                     A[i][j] = A[k][j];
                     A[k][j] = temp;
                 }
-                for (j = 0; j < n; ++j) {
+                for (vecSizeT j = 0; j < n; ++j) {
                     temp = A[j][i];
                     A[j][i] = A[j][k];
                     A[j][k] = temp;
                 }
             }
-            for (i = k + 1; i < n; ++i) {
+            for (vecSizeT i = k + 1; i < n; ++i) {
                 temp = A[i][k - 1] / ret[0][0];
                 A[i][k - 1] = 0;
                 for (vecSizeT j = k; j < n; ++j) {
@@ -969,11 +959,13 @@ Matrix<double> Matrix<T>::div(const Matrix<T> &other) const {
 #ifndef DIVCHECK
 #define DIVCHECK
     assert(data.size());
+    assert(isSquare());
     assert(other.row() == other.col());
 #endif
 
     return this ->toDouble() * other.inv();
 }
+
 /**
  * 矩阵右除
  */
@@ -982,6 +974,7 @@ Matrix<double> Matrix<T>::rdiv(const Matrix<T> &other) const {
 #ifndef DIVCHECK
 #define DIVCHECK
     assert(data.size());
+    assert(isSquare());
     assert(other.row() == other.col());
 #endif
 
@@ -997,6 +990,7 @@ Matrix<double> Matrix<T>::operator / (const Matrix<T> &other) const {
 #ifndef DIVCHECK
 #define DIVCHECK
     assert(data.size());
+    assert(isSquare());
     assert(other.row() == other.col());
 #endif
 
@@ -1012,6 +1006,7 @@ Matrix<double> Matrix<T>::operator /= (const Matrix<T> &other) {
 #ifndef DIVCHECK
 #define DIVCHECK
     assert(data.size());
+    assert(isSquare());
     assert(other.row() == other.col());
 #endif
 
@@ -1027,6 +1022,7 @@ Matrix<double> Matrix<T>::operator % (const Matrix<T> &other) const {
 #ifndef DIVCHECK
 #define DIVCHECK
     assert(data.size());
+    assert(isSquare());
     assert(other.row() == other.col());
 #endif
 
@@ -1124,7 +1120,10 @@ Matrix<T> Matrix<T>::cut(vecSizeT rs, vecSizeT re, vecSizeT cs, vecSizeT ce) con
 #define NOTEMPTY
     assert(!empty());
 #endif
-    assert(re < row() && rs >= 0 && ce < col() && cs >= 0);
+    assert(re < row());
+    assert(rs >= 0);
+    assert(ce < col());
+    assert(cs >= 0);
     Matrix<T> ret(-~re - rs, -~ce - cs);
     for (vecSizeT i = rs, ri = 0; i <= re; ++i, ++ri) {
         for (vecSizeT j = cs, rj = 0; j <= ce; ++j, ++rj) {
@@ -1167,7 +1166,7 @@ Matrix<T> Matrix<T>::operator = (const Matrix<T> &other) {
  * 移动矩阵
  */
 template <typename T>
-Matrix<T> Matrix<T>::operator = (Matrix<T> && other) {
+Matrix<T> Matrix<T>::operator = (Matrix<T> &&other) {
     data.swap(other.getData());
     return *this;
 }
@@ -1188,111 +1187,4 @@ const std::vector<std::vector<T> >& Matrix<T>::getData() const {
     return data;
 }
 
-/**
- * 生成 0 - 1 之间的一个正态随机数
- */
-template <typename T>
-T Matrix<T>::randn() {
-    initRand();
-    std::normal_distribution<> norDis(0, 1);
-    return norDis(*_genPtr);
-}
-
-/**
- * 生成一个 n * n 正态随机矩阵
- * 输入参数为矩阵的边长
- */
-template <typename T>
-Matrix<T> Matrix<T>::randn(vecSizeT n) {
-    initRand();
-    std::normal_distribution<> norDis(0, 1);
-    Matrix<T> mat(n, n);
-    for (vecSizeT i = 0; i < n; ++i) {
-        for (vecSizeT j = 0; j < n; ++j) {
-            mat[i][j] = norDis(*_genPtr);
-        }
-    }
-    return mat;
-}
-
-/**
- * 生成一个正态随机矩阵
- * 输入参数为矩阵的行数和列数
- */
-template <typename T>
-Matrix<T> Matrix<T>::randn(vecSizeT r, vecSizeT c) {
-    initRand();
-    std::normal_distribution<> norDis(0, 1);
-    Matrix<T> mat(r, c);
-    for (vecSizeT i = 0; i < r; ++i) {
-        for (vecSizeT j = 0; j < c; ++j) {
-            mat[i][j] = norDis(*_genPtr);
-        }
-    }
-    return mat;
-}
-
-/**
- * 初始化单例随机数生成器
- */
-template <typename T>
-void Matrix<T>::initRand() {
-    if (!_genPtr) {
-#ifdef linux
-        std::random_device rd;
-        _genPtr = new std::mt19937(rd());
-#else
-        _genPtr = new std::mt19937(std::time(NULL));
-#endif
-    }
-}
-
-
-/**
- * 如果矩阵是浮点数，生成 0 - 1 之间的一个均匀分布随机数
- * 如果矩阵是整形，生成 0 - 65525 之间的一个均匀分布随机数
- */
-template <typename T>
-T Matrix<T>::rand() {
-    initRand();
-    if (SameType<T, double>::isSame) {
-        std::uniform_real_distribution<> uniDoubleDis(0, 1);
-        return uniDoubleDis(*_genPtr);
-    } else {
-        std::uniform_int_distribution<> uniIntDis(0, 65535);
-        return uniIntDis(*_genPtr);
-    }
-}
-
-/**
- * 生成一个 n * n 均匀分布随机矩阵
- * 输入参数为矩阵的边长
- */
-template <typename T>
-Matrix<T> Matrix<T>::rand(vecSizeT n) {
-    initRand();
-    Matrix<T> mat(n, n);
-    for (vecSizeT i = 0; i < n; ++i) {
-        for (vecSizeT j = 0; j < n; ++j) {
-            mat[i][j] = rand();
-        }
-    }
-    return mat;
-}
-
-/**
- * 生成一个均匀分布随机矩阵
- * 输入参数为矩阵的行数和列数
- */
-template <typename T>
-Matrix<T> Matrix<T>::rand(vecSizeT r, vecSizeT c) {
-    initRand();
-    Matrix<T> mat(r, c);
-    for (vecSizeT i = 0; i < r; ++i) {
-        for (vecSizeT j = 0; j < c; ++j) {
-            mat[i][j] = rand();
-        }
-    }
-    return mat;
-}
 #endif
