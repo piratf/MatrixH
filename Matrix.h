@@ -86,15 +86,27 @@ template <typename T>
 class Matrix {
 public:
     Matrix() = default;
+    Matrix(Matrix<T> &&other) {
+        data.swap(other.data);
+    }
+    Matrix(const Matrix<T> &other) {
+        data = other.getData();
+    }
     Matrix(vecSizeT _x);
     Matrix(vecSizeT _x, vecSizeT _y);
     Matrix(std::vector<std::vector<T> > dvec);
 
     void inline clear();
     friend void inline swap(Matrix<T> &lhs, Matrix<T> &rhs) {
-        lhs.data.swap(rhs.data);
+        lhs.data.swap(rhs.getData());
     }
     void inline setZero();
+    std::vector<std::vector<T> >& getData() {
+        return data;
+    }
+    const std::vector<std::vector<T> >& getData() const {
+        return data;
+    }
 
     Matrix<T> inline cut(vecSizeT rs, vecSizeT re, vecSizeT cs, vecSizeT ce) const;
     vecSizeT inline col() const;
@@ -132,6 +144,14 @@ public:
 
     std::vector<T>& operator [](vecSizeT index);
     const std::vector<T>& operator [](vecSizeT index) const;
+    Matrix<T> operator = (const Matrix<T> &other) {
+        data = other.getData();
+        return *this;
+    }
+    Matrix<T> operator = (Matrix<T> &&other) {
+        data.swap(other.getData());
+        return *this;
+    }
     Matrix<T> inline operator + (const Matrix<T> &other) const ;
     Matrix<T> inline operator - (const Matrix<T> &other) const ;
     Matrix<T> inline operator * (const Matrix<T> &other) const ;
@@ -151,9 +171,9 @@ public:
         Matrix<T> src = mat;
         for (; exponent; exponent >>= 1) {
             if (exponent & 1) {
-                ans = ans * src;
+                ans *= src;
             }
-            src = src * src;
+            src *= src;
         }
         return ans;
     }
@@ -283,11 +303,11 @@ T Matrix<T>::vectorDotProduct(const std::vector<T> lhs, std::vector<T> rhs) {
 }
 
 /**
- * 矩阵的均值
+ * 一个向量的均值
  */
 template <typename T>
 T Matrix<T>::avg(const std::vector<T> &vec) {
-    T sum;
+    T sum = 0;
     for (T var : vec) {
         sum += var;
     }
@@ -441,8 +461,8 @@ Matrix<double> Matrix<T>::inv() const {
                 temp = TMat[j][i];
                 //第j行元素 - i行元素*j列i行元素
                 for (k = 0; k < len; k++) {
-                    TMat[j][k] = TMat[j][k] - TMat[i][k] * temp;
-                    ans[j][k] = ans[j][k] - ans[i][k] * temp;
+                    TMat[j][k] -= TMat[i][k] * temp;
+                    ans[j][k] -= ans[i][k] * temp;
                 }
             }
         }
@@ -762,20 +782,20 @@ std::complex<double> Matrix<T>::cond2() const {
 }
 
 /**
- * 矩阵在 二范式 下的均值
+ * 矩阵的均值
  */
 template <typename T>
 T Matrix<T>::avg() const {
-    if (!data.size()) {
+    if (!empty()) {
         return static_cast<T>(0);
     }
-    T sum = static_cast<T>(0);
-    for (vecSizeT i = 0; i < data.size(); ++i) {
-        for (vecSizeT j = 0; j < data[0].size(); ++j) {
-            sum += data[i][j];
+    T sum;
+    for (const auto row : data) {
+        for (T var : row) {
+            sum += var;
         }
     }
-    return sum / data.size() * data[0].size();
+    return sum / (row() * col());
 }
 
 /**

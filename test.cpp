@@ -36,10 +36,10 @@ int main() {
     cout << m % n << endl;
     cout << m.cut(0, 1, 4, 7);
     cout << n / m << endl;
-    auto bitch = n.eig();
-    cout << bitch << endl;
+    cout << n.eig() << endl;
     cout << (m ^ 100) << endl;
     cout << m.avg() << endl;
+    n = m;
     cout << m.eig() << endl;
     m.cov();
     m.inv();
