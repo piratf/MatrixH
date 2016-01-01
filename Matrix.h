@@ -85,27 +85,19 @@ template <typename T>
 class Matrix {
 public:
     Matrix() = default;
-    Matrix(Matrix<T> &&other) {
-        data.swap(other.data);
-    }
-    Matrix(const Matrix<T> &other) {
-        data = other.getData();
-    }
+    Matrix(Matrix<T> &&other);
+    Matrix(const Matrix<T> &other);
     Matrix(vecSizeT _x);
     Matrix(vecSizeT _x, vecSizeT _y);
     Matrix(std::vector<std::vector<T> > dvec);
 
     void inline clear();
-    friend void inline swap(Matrix<T> &lhs, Matrix<T> &rhs) {
-        lhs.data.swap(rhs.getData());
+    void inline swap(Matrix<T> &rhs) {
+        data.swap(rhs.getData());
     }
     void inline setZero();
-    std::vector<std::vector<T> >& getData() {
-        return data;
-    }
-    const std::vector<std::vector<T> >& getData() const {
-        return data;
-    }
+    std::vector<std::vector<T> >& getData();
+    const std::vector<std::vector<T> >& getData() const ;
 
     Matrix<T> inline cut(vecSizeT rs, vecSizeT re, vecSizeT cs, vecSizeT ce) const;
     vecSizeT inline col() const;
@@ -143,14 +135,8 @@ public:
 
     std::vector<T>& operator [](vecSizeT index);
     const std::vector<T>& operator [](vecSizeT index) const;
-    Matrix<T> operator = (const Matrix<T> &other) {
-        data = other.getData();
-        return *this;
-    }
-    Matrix<T> operator = (Matrix<T> &&other) {
-        data.swap(other.getData());
-        return *this;
-    }
+    Matrix<T> operator = (const Matrix<T> &other);
+    Matrix<T> operator = (Matrix<T> &&other);
     Matrix<T> inline operator + (const Matrix<T> &other) const ;
     Matrix<T> inline operator - (const Matrix<T> &other) const ;
     Matrix<T> inline operator * (const Matrix<T> &other) const ;
@@ -208,12 +194,21 @@ private:
     std::vector< std::vector<T> > data;
 };
 
-// template <typename T>
-// class Matrix<std::complex<T> >
-// {
-// public:
-//     Matrix<complex<T> > toDouble() const;
-// };
+/**
+ * 移动构造
+ */
+template <typename T>
+Matrix<T>::Matrix(Matrix<T> &&other) {
+    data.swap(other.data);
+}
+
+/**
+ * 拷贝构造
+ */
+template <typename T>
+Matrix<T>::Matrix(const Matrix<T> &other) {
+    data = other.getData();
+}
 
 /**
  * 建立一个n行的空矩阵
@@ -1158,6 +1153,40 @@ void Matrix<T>::setZero() {
     for (vecSizeT i = 0; i < n; ++i) {
         std::memset(&data[i][0], 0, sizeof(T) * m);
     }
+}
+
+/**
+ * 拷贝矩阵
+ */
+template <typename T>
+Matrix<T> Matrix<T>::operator = (const Matrix<T> &other) {
+    data = other.getData();
+    return *this;
+}
+
+/**
+ * 移动矩阵
+ */
+template <typename T>
+Matrix<T> Matrix<T>::operator = (Matrix<T> &&other) {
+    data.swap(other.getData());
+    return *this;
+}
+
+/**
+ * 获取 data 成员，可用于整块更新
+ */
+template <typename T>
+std::vector<std::vector<T> >& Matrix<T>::getData() {
+    return data;
+}
+
+/**
+ * 以 const 方式获取成员，可用于安全读
+ */
+template <typename T>
+const std::vector<std::vector<T> >& Matrix<T>::getData() const {
+    return data;
 }
 
 #endif

@@ -29,6 +29,11 @@ int main() {
     cout << Matrix<double>::eye(D, D) << endl;
     cout << m << endl;
     cout << n << endl;
+    m.swap(n);
+    cout << m << endl;
+    cout << n << endl;
+    cout << m.row() << ' ' << m.col() << endl;
+    cout << m.max() << ' ' << m.min() << ' ' << m.avg() << endl;
     cout << m + n << endl;
     cout << m - n << endl;
     cout << m * n << endl;
