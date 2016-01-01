@@ -5,7 +5,7 @@
 using namespace std;
 
 // 矩阵大小
-const unsigned D = 10;
+const unsigned D = 100;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -26,29 +26,46 @@ int main() {
             // cin >> n[i][j];
         }
     }
-    cout << Matrix<double>::eye(D, D) << endl;
+    cerr << "print" << endl;
     cout << m << endl;
     cout << n << endl;
+    cerr << "swap" << endl;
     m.swap(n);
+    cerr << "print" << endl;
     cout << m << endl;
     cout << n << endl;
+    cerr << "get contribute" << endl;
     cout << m.row() << ' ' << m.col() << endl;
     cout << m.max() << ' ' << m.min() << ' ' << m.avg() << endl;
+    cerr << "operator +" << endl;
     cout << m + n << endl;
+    cerr << "operator -" << endl;
     cout << m - n << endl;
+    cerr << "operator *" << endl;
     cout << m * n << endl;
+    cerr << "operator /" << endl;
     cout << m / n << endl;
+    cerr << "operator %" << endl;
     cout << m % n << endl;
-    cout << m.cut(0, 1, 4, 7);
-    cout << n / m << endl;
+    cerr << "cut" << endl;
+    cout << m.cut(0, m.row() / 2, 0, m.col() / 2);
+    cerr << "eig" << endl;
     cout << n.eig() << endl;
+    cerr << "operator ^" << endl;
     cout << (m ^ 100) << endl;
+    cerr << "avg" << endl;
     cout << m.avg() << endl;
+    cerr << "copy" << endl;
     n = m;
-    cout << m.eig() << endl;
-    m.cov();
-    m.inv();
-    m.hess();
+    cerr << "cov" << endl;
+    cout << m.cov() << endl;
+    cerr << "inv" << endl;
+    cout << m.inv() << endl;
+    cerr << "hess" << endl;
+    cout << m.hess() << endl;
+    cerr << "cond2" << endl;
     cout << m.cond2() << endl;
+    cerr << "eye" << endl;
+    cout << Matrix<double>::eye(D, D) << endl;
     return 0;
 }

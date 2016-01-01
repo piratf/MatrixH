@@ -131,7 +131,7 @@ public:
     bool inline isSingular() const;
 
     std::complex<double> det() const;
-    Matrix<T> getTransposition();
+    Matrix<T> getTransposition() const;
 
     std::vector<T>& operator [](vecSizeT index);
     const std::vector<T>& operator [](vecSizeT index) const;
@@ -263,7 +263,7 @@ Matrix<T> Matrix<T>::eye(vecSizeT _x, vecSizeT _y) {
  * @return 新的矩阵，内容为原矩阵的转置
  */
 template <typename T>
-Matrix<T> Matrix<T>::getTransposition() {
+Matrix<T> Matrix<T>::getTransposition() const {
     decltype(data.size()) sizeRow = data.size();
     if (sizeRow == 0) {
         std::cerr << "error** Matrix<T>::getTransposition -> empty Matrix!" << std::endl;
@@ -313,13 +313,13 @@ T Matrix<T>::avg(const std::vector<T> &vec) {
  */
 template <typename T>
 Matrix<T> Matrix<T>::cov() const {
-    Matrix mat = *this;
-    const vecSizeT sizeRow = mat.data.size();
-
-    assert(sizeRow > 0);
-
-    const vecSizeT sizeCol = mat.data[0].size();
-    mat = mat.getTransposition();
+#ifndef NOTEMPTY
+#define NOTEMPTY
+    assert(!empty());
+#endif
+    const vecSizeT sizeRow = row();
+    const vecSizeT sizeCol = col();
+    auto mat = this ->getTransposition();
     std::vector<T> avgVec;
     // 对于每一行求其均值
     for (auto &row : mat.data) {
@@ -412,9 +412,14 @@ Matrix<double> Matrix<T>::inv() const {
     vecSizeT i, j, k, len = row();
     double max, temp;
     //将A矩阵存放在临时矩阵中
-    Matrix<double> TMat = this ->toDouble();
+    Matrix<double> TMat;
+    if (SameType<T, double>::isSame) {
+        TMat = *this;
+    } else {
+        TMat = this ->toDouble();
+    }
     //初始化ans矩阵为单位阵
-    Matrix<double> ans = Matrix<T>::eye(TMat.row(), TMat.col()).toDouble();
+    Matrix<double> ans = Matrix<double>::eye(row(), col());
 
     for (i = 0; i < len; i++) {
         //寻找主元
@@ -1037,15 +1042,11 @@ template <typename T>
 Matrix<double> Matrix<T>::toDouble() const {
     Matrix<double> mat(row(), col());
     // 如果矩阵是复数，则只取实数部分，忽略虚数部分
-    try {
-        for (vecSizeT i = 0; i < row(); ++i) {
-            for (vecSizeT j = 0; j < col(); ++j) {
-                mat[i][j] = static_cast<double>(data[i][j]);
-            }
+    // 未实现
+    for (vecSizeT i = 0; i < row(); ++i) {
+        for (vecSizeT j = 0; j < col(); ++j) {
+            mat[i][j] = static_cast<double>(data[i][j]);
         }
-    }
-    catch (Exception e) {
-        e.printMessage();
     }
     return mat;
 }
