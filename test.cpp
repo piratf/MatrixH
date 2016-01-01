@@ -8,7 +8,7 @@
 using namespace std;
 
 // 矩阵大小
-const unsigned D = 500;
+const unsigned D = 100;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -54,13 +54,13 @@ int main() {
     LARGE_INTEGER start_t1, stop_t1;
     double exe_time;
     QueryPerformanceFrequency(&freq);
+    m.inv();
     // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
     cerr << "The frequency of your pc is  " << freq.QuadPart << endl;
     QueryPerformanceCounter(&start_t);
-    m.mul(c, n);
     QueryPerformanceCounter(&stop_t);
     exe_time = 1e3 * (stop_t.QuadPart - start_t.QuadPart) / freq.QuadPart;
-    cerr << "Use Time: " << exe_time << endl;
+    cerr << "inv use Time: " << exe_time << endl;
     // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
 
 
