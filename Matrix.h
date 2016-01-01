@@ -148,7 +148,7 @@ public:
     Matrix<double> inline operator /= (const Matrix<T> &other);
     /**
     * 矩阵快速幂
-    * 参数需要一个自定义类型，需要使用 friend
+    * 参数需要一个当前类类型成员，需要使用 friend 实现
     * 友元模板的原因需要在声明处实现
     */
     friend Matrix<T> inline operator ^ (const Matrix<T> &mat, unsigned exponent) {
