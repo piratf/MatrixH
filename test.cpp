@@ -8,6 +8,7 @@
 using namespace std;
 
 // 矩阵大小
+// 超过 100 以后在普通电脑上求逆和除法会比较慢
 const unsigned D = 100;
 
 int main() {
@@ -54,10 +55,10 @@ int main() {
     LARGE_INTEGER start_t1, stop_t1;
     double exe_time;
     QueryPerformanceFrequency(&freq);
-    m.inv();
     // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
     cerr << "The frequency of your pc is  " << freq.QuadPart << endl;
     QueryPerformanceCounter(&start_t);
+    m / n;
     QueryPerformanceCounter(&stop_t);
     exe_time = 1e3 * (stop_t.QuadPart - start_t.QuadPart) / freq.QuadPart;
     cerr << "inv use Time: " << exe_time << endl;

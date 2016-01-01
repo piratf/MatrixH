@@ -404,13 +404,16 @@ bool Matrix<T>::isSingular() const {
  */
 template <typename T>
 Matrix<double> Matrix<T>::inv() const {
+#ifndef NOTEMPTY
+#define NOTEMPTY
+    assert(!empty());
+#endif
 #ifndef ISSQUARE
 #define ISSQUARE
-    assert(data.size() > 0);
     assert(isSquare());
 #endif
     vecSizeT i, j, k, len = row();
-    double max, temp;
+    double maxVal, temp;
     //将A矩阵存放在临时矩阵中
     Matrix<double> TMat;
     if (SameType<T, double>::isSame) {
@@ -423,25 +426,18 @@ Matrix<double> Matrix<T>::inv() const {
 
     for (i = 0; i < len; i++) {
         //寻找主元
-        max = TMat[i][i];
+        maxVal = TMat[i][i];
         k = i;
         for (j = i + 1; j < len; j++) {
-            if (fabs(TMat[j][i]) > fabs(max)) {
-                max = TMat[j][i];
+            if (std::abs(TMat[j][i]) > std::abs(maxVal)) {
+                maxVal = TMat[j][i];
                 k = j;
             }
         }
         //如果主元所在行不是第i行，进行行交换
         if (k != i) {
-            for (j = 0; j < len; j++) {
-                temp = TMat[i][j];
-                TMat[i][j] = TMat[k][j];
-                TMat[k][j] = temp;
-                //B伴随交换
-                temp = ans[i][j];
-                ans[i][j] = ans[k][j];
-                ans[k][j] = temp;
-            }
+            TMat[i].swap(TMat[k]);
+            ans[i].swap(ans[k]);
         }
         //判断主元是否为0, 若是, 则矩阵A不是满秩矩阵,不存在逆矩阵
         if (cond2().real() > 1e10) {
@@ -450,15 +446,15 @@ Matrix<double> Matrix<T>::inv() const {
         //消去A的第i列除去i行以外的各行元素
         temp = TMat[i][i];
         for (j = 0; j < len; j++) {
-            TMat[i][j] = TMat[i][j] / temp;        //主对角线上的元素变为1
-            ans[i][j] = ans[i][j] / temp;        //伴随计算
+            TMat[i][j] = TMat[i][j] / temp;     //主对角线上的元素变为1
+            ans[i][j] = ans[i][j] / temp;       //伴随计算
         }
-        //第0行->第n行
+        // 遍历行
         for (j = 0; j < len; j++) {
-            //不是第i行
+            // 不是第i行
             if (j != i) {
                 temp = TMat[j][i];
-                //第j行元素 - i行元素*j列i行元素
+                // 第j行元素 - i行元素 * j列i行元素
                 for (k = 0; k < len; k++) {
                     TMat[j][k] -= TMat[i][k] * temp;
                     ans[j][k] -= ans[i][k] * temp;
@@ -520,9 +516,12 @@ const std::vector<T>& Matrix<T>::operator [](vecSizeT index) const {
  */
 template <typename T>
 Matrix<double> Matrix<T>::hess() const {
+#ifndef NOTEMPTY
+#define NOTEMPTY
+    assert(!empty());
+#endif
 #ifndef ISSQUARE
 #define ISSQUARE
-    assert(data.size() > 0);
     assert(isSquare());
 #endif
     Matrix<double> A = toDouble();
@@ -574,12 +573,16 @@ Matrix<double> Matrix<T>::hess() const {
 
 /**
  * 返回矩阵的全部特征根，以复数表示
+ * QR 分解法
  */
 template<typename T>
 Matrix<std::complex<double>> Matrix<T>::eig(double eps, unsigned LOOP) const {
+#ifndef NOTEMPTY
+#define NOTEMPTY
+    assert(!empty());
+#endif
 #ifndef ISSQUARE
 #define ISSQUARE
-    assert(data.size() > 0);
     assert(isSquare());
 #endif
     unsigned loop = LOOP;
