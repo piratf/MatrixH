@@ -116,7 +116,7 @@ void testRandnWithMap() {
 }
 
 void test() {
-    cout << Matrix<int>::rand(5, 10) << endl;
+    cout << Matrix<int>::randn(5, 10) << endl;
 }
 
 int main() {

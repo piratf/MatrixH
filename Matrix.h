@@ -19,6 +19,11 @@ using vecSizeT = size_t;
 // 单例随机数生成器
 std::mt19937 *_genPtr;
 
+std::normal_distribution<double> normDis(0, 1);
+std::uniform_real_distribution<double> unifDoubleDis(0, 1);
+std::uniform_real_distribution<float> unifFloatDis(0, 1);
+std::uniform_int_distribution<int> unifIntDis(0, 65535);
+
 // 辅助代码
 // =========================================
 // 用来判断类别是否相同
@@ -95,7 +100,8 @@ public:
     Matrix(vecSizeT _x, vecSizeT _y);
     Matrix(std::vector<std::vector<T> > dvec);
 
-    static void inline initRand();
+    static void inline setRand();
+    static void inline setRand(std::mt19937 *_p);
     static T inline randn();
     static Matrix<T> inline randn(vecSizeT n);
     static Matrix<T> inline randn(vecSizeT r, vecSizeT c);
@@ -103,6 +109,8 @@ public:
     static T inline rand();
     static Matrix<T> inline rand(vecSizeT n);
     static Matrix<T> inline rand(vecSizeT r, vecSizeT c);
+
+    // static T inline random();
 
     void inline clear();
     void inline swap(Matrix<T> &rhs) {
@@ -1193,9 +1201,8 @@ const std::vector<std::vector<T> >& Matrix<T>::getData() const {
  */
 template <typename T>
 T Matrix<T>::randn() {
-    initRand();
-    std::normal_distribution<> norDis(0, 1);
-    return norDis(*_genPtr);
+    setRand();
+    return normDis(*_genPtr);
 }
 
 /**
@@ -1204,12 +1211,11 @@ T Matrix<T>::randn() {
  */
 template <typename T>
 Matrix<T> Matrix<T>::randn(vecSizeT n) {
-    initRand();
-    std::normal_distribution<> norDis(0, 1);
+    setRand();
     Matrix<T> mat(n, n);
     for (vecSizeT i = 0; i < n; ++i) {
         for (vecSizeT j = 0; j < n; ++j) {
-            mat[i][j] = norDis(*_genPtr);
+            mat[i][j] = normDis(*_genPtr);
         }
     }
     return mat;
@@ -1221,12 +1227,11 @@ Matrix<T> Matrix<T>::randn(vecSizeT n) {
  */
 template <typename T>
 Matrix<T> Matrix<T>::randn(vecSizeT r, vecSizeT c) {
-    initRand();
-    std::normal_distribution<> norDis(0, 1);
+    setRand();
     Matrix<T> mat(r, c);
     for (vecSizeT i = 0; i < r; ++i) {
         for (vecSizeT j = 0; j < c; ++j) {
-            mat[i][j] = norDis(*_genPtr);
+            mat[i][j] = normDis(*_genPtr);
         }
     }
     return mat;
@@ -1236,7 +1241,7 @@ Matrix<T> Matrix<T>::randn(vecSizeT r, vecSizeT c) {
  * 初始化单例随机数生成器
  */
 template <typename T>
-void Matrix<T>::initRand() {
+void Matrix<T>::setRand() {
     if (!_genPtr) {
 #ifdef linux
         std::random_device rd;
@@ -1247,6 +1252,16 @@ void Matrix<T>::initRand() {
     }
 }
 
+/**
+ * 传入初始化单例随机数生成器
+ */
+template <typename T>
+void Matrix<T>::setRand(std::mt19937 *_p) {
+    if (_genPtr) {
+        delete _genPtr;
+    }
+    _genPtr = _p;
+}
 
 /**
  * 如果矩阵是浮点数，生成 0 - 1 之间的一个均匀分布随机数
@@ -1254,13 +1269,13 @@ void Matrix<T>::initRand() {
  */
 template <typename T>
 T Matrix<T>::rand() {
-    initRand();
+    setRand();
     if (SameType<T, double>::isSame) {
-        std::uniform_real_distribution<> uniDoubleDis(0, 1);
-        return uniDoubleDis(*_genPtr);
+        return unifDoubleDis(*_genPtr);
+    } else if (SameType<T, float>::isSame) {
+        return unifFloatDis(*_genPtr);
     } else {
-        std::uniform_int_distribution<> uniIntDis(0, 65535);
-        return uniIntDis(*_genPtr);
+        return unifIntDis(*_genPtr);
     }
 }
 
@@ -1270,7 +1285,7 @@ T Matrix<T>::rand() {
  */
 template <typename T>
 Matrix<T> Matrix<T>::rand(vecSizeT n) {
-    initRand();
+    setRand();
     Matrix<T> mat(n, n);
     for (vecSizeT i = 0; i < n; ++i) {
         for (vecSizeT j = 0; j < n; ++j) {
@@ -1286,7 +1301,7 @@ Matrix<T> Matrix<T>::rand(vecSizeT n) {
  */
 template <typename T>
 Matrix<T> Matrix<T>::rand(vecSizeT r, vecSizeT c) {
-    initRand();
+    setRand();
     Matrix<T> mat(r, c);
     for (vecSizeT i = 0; i < r; ++i) {
         for (vecSizeT j = 0; j < c; ++j) {
