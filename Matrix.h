@@ -60,7 +60,7 @@ public:
     explicit Exception(const std::string &_m): message(_m) {
     }
 
-    printMessage() {
+    void printMessage() const {
         std::cout << message << std::endl;
     }
 
@@ -910,8 +910,8 @@ Matrix<T> Matrix<T>::operator * (const Matrix<T> &other) const {
     assert(col() == other.row());
 #endif
     Matrix<T> ret(col(), other.row());
-    // 大的对称矩阵使用 斯特拉森乘法
-    if (row() > 50 && row() == col()) {
+    // 对称矩阵使用 斯特拉森乘法
+    if (row() == col()) {
         smul(ret, other);
     } else {
         // 普通乘法

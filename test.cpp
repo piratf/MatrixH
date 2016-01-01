@@ -1,11 +1,14 @@
 #include <iostream>
 #include <complex>
 #include <time.h>
+#ifdef __WIN32
+#include <windows.h>
+#endif
 #include "Matrix.h"
 using namespace std;
 
 // 矩阵大小
-const unsigned D = 100;
+const unsigned D = 500;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -41,6 +44,38 @@ int main() {
     cout << m + n << endl;
     cerr << "operator -" << endl;
     cout << m - n << endl;
+
+#ifdef __WIN32
+    Matrix<double> c(m.row(), n.row());
+    Matrix<double> d(m.row(), n.row());
+    LARGE_INTEGER freq;
+    LARGE_INTEGER start_t, stop_t;
+    LARGE_INTEGER freq1;
+    LARGE_INTEGER start_t1, stop_t1;
+    double exe_time;
+    QueryPerformanceFrequency(&freq);
+    // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
+    cerr << "The frequency of your pc is  " << freq.QuadPart << endl;
+    QueryPerformanceCounter(&start_t);
+    m.mul(c, n);
+    QueryPerformanceCounter(&stop_t);
+    exe_time = 1e3 * (stop_t.QuadPart - start_t.QuadPart) / freq.QuadPart;
+    cerr << "Use Time: " << exe_time << endl;
+    // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
+
+
+    QueryPerformanceFrequency(&freq1);
+    // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
+    cerr << "The frequency of your pc is  " << freq1.QuadPart << endl;
+    QueryPerformanceCounter(&start_t1);
+    m.smul(d, n);
+    QueryPerformanceCounter(&stop_t1);
+    exe_time = 1e3 * (stop_t1.QuadPart - start_t1.QuadPart) / freq1.QuadPart;
+    cerr << "Use Time: " << exe_time << endl;
+    // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
+#endif
+
+
     cerr << "operator *" << endl;
     cout << m * n << endl;
     cerr << "operator /" << endl;
