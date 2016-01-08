@@ -10,9 +10,13 @@ using namespace std;
 
 // 矩阵大小
 // 超过 100 以后在普通电脑上求逆和除法会比较慢
-const unsigned D = 5;
+const unsigned D = 30;
 
 void AccurateTest() {
+
+    Matrix<double> m = Matrix<double>::rand(D, D);
+    Matrix<double> n = Matrix<double>::rand(D, D);
+
 #ifdef __WIN32
     LARGE_INTEGER freq;
     LARGE_INTEGER start_t, stop_t;
@@ -21,21 +25,23 @@ void AccurateTest() {
     double exe_time;
     QueryPerformanceFrequency(&freq);
     // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
-    cerr << "The frequency of your pc is  " << freq.QuadPart << endl;
+    cout << "The frequency of your pc is  " << freq.QuadPart << endl;
     QueryPerformanceCounter(&start_t);
+    m.mul(m, n);
     QueryPerformanceCounter(&stop_t);
     exe_time = 1e3 * (stop_t.QuadPart - start_t.QuadPart) / freq.QuadPart;
-    cerr << "inv use Time: " << exe_time << endl;
+    cout << "use Time of mul: " << exe_time << "ms" << endl;
     // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
 
 
     QueryPerformanceFrequency(&freq1);
     // fprintf(stdout, "The frequency of your pc is %d.\n", freq.QuadPart);
-    cerr << "The frequency of your pc is  " << freq1.QuadPart << endl;
+    cout << "The frequency of your pc is  " << freq1.QuadPart << endl;
     QueryPerformanceCounter(&start_t1);
+    m.smul(m, n);
     QueryPerformanceCounter(&stop_t1);
     exe_time = 1e3 * (stop_t1.QuadPart - start_t1.QuadPart) / freq1.QuadPart;
-    cerr << "Use Time: " << exe_time << endl;
+    cout << "use Time of smul: " << exe_time << "ms" << endl;
     // fprintf(stdout, "Your program executed time is %fms.\n", exe_time);
 #endif
 }
@@ -43,62 +49,62 @@ void AccurateTest() {
 void testWithPrint() {
     srand((unsigned)time(NULL));
 
-    Matrix<double> m(D, D), n(D, D);
-    for (unsigned i = 0; i < D; ++i) {
-        for (unsigned j = 0; j < D; ++j) {
-            m[i][j] = rand() % 10;
-            // cin >> m[i][j];
-        }
-    }
-    for (unsigned i = 0; i < D; ++i) {
-        for (unsigned j = 0; j < D; ++j) {
-            n[i][j] = rand() % 10;
-            // cin >> n[i][j];
-        }
-    }
-    cerr << "print" << endl;
+    Matrix<double> m = Matrix<double>::rand(D, D);
+    Matrix<double> n = Matrix<double>::rand(D, D);
+    // for (unsigned i = 0; i < D; ++i) {
+    //     for (unsigned j = 0; j < D; ++j) {
+    //         // cin >> m[i][j];
+    //     }
+    // }
+    // for (unsigned i = 0; i < D; ++i) {
+    //     for (unsigned j = 0; j < D; ++j) {
+    //         // cin >> n[i][j];
+    //     }
+    // }
+    cout << "print" << endl;
     cout << m << endl;
     cout << n << endl;
-    cerr << "swap" << endl;
+    cout << "swap" << endl;
     m.swap(n);
-    cerr << "print" << endl;
+    cout << "print" << endl;
     cout << m << endl;
     cout << n << endl;
-    cerr << "get contribute" << endl;
+    cout << "get contribute" << endl;
     cout << m.row() << ' ' << m.col() << endl;
     cout << m.max() << ' ' << m.min() << ' ' << m.avg() << endl;
-    cerr << "operator +" << endl;
+    cout << "operator +" << endl;
     cout << m + n << endl;
-    cerr << "operator -" << endl;
+    cout << "operator -" << endl;
     cout << m - n << endl;
 
-
-
-    cerr << "operator *" << endl;
+    
+    cout << "operator *" << endl;
     cout << m * n << endl;
-    cerr << "operator /" << endl;
+    cout << "operator /" << endl;
     cout << m / n << endl;
-    cerr << "operator %" << endl;
+    cout << "operator %" << endl;
     cout << m % n << endl;
-    cerr << "cut" << endl;
+    cout << "cut" << endl;
     cout << m.cut(0, m.row() / 2, 0, m.col() / 2);
-    cerr << "eig" << endl;
+    cout << "eig" << endl;
     cout << n.eig() << endl;
-    cerr << "operator ^" << endl;
-    cout << (m ^ 100) << endl;
-    cerr << "avg" << endl;
+    // cout << "cond2" << endl;
+    // cout << n.cond2() << endl;
+    cout << "operator ^" << endl;
+    cout << (m ^ 15) << endl;
+    cout << "avg" << endl;
     cout << m.avg() << endl;
-    cerr << "copy" << endl;
+    cout << "copy" << endl;
     n = m;
-    cerr << "cov" << endl;
+    cout << "cov" << endl;
     cout << m.cov() << endl;
-    cerr << "inv" << endl;
+    cout << "inv" << endl;
     cout << m.inv() << endl;
-    cerr << "hess" << endl;
-    cout << m.hess() << endl;
-    cerr << "cond2" << endl;
+    // cout << "hess" << endl;
+    // cout << m.hess() << endl;
+    cout << "cond2" << endl;
     cout << m.cond2() << endl;
-    cerr << "eye" << endl;
+    cout << "eye" << endl;
     cout << Matrix<double>::eye(D, D) << endl;
 }
 
@@ -116,7 +122,7 @@ void testRandnWithMap() {
 }
 
 void test() {
-    cout << Matrix<int>::randn(5, 10) << endl;
+    cout << Matrix<double>::randn(5, 10) << endl;
 }
 
 int main() {
@@ -126,7 +132,8 @@ int main() {
 
     testWithPrint();
     // testRandnWithMap();
-    test();
+    // test();
+    // AccurateTest();
 
     return 0;
 }
