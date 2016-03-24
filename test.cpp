@@ -1,16 +1,33 @@
-#include <iostream>
+#include <iosfwd>
 #include <complex>
 #include <map>
 #include <time.h>
 #ifdef __WIN32
-#include <windows.h>
+    #include <windows.h>
 #endif
 #include "Matrix.h"
 using namespace std;
+using namespace pmh;
 
 // 矩阵大小
 // 超过 100 以后在普通电脑上求逆和除法会比较慢
-const unsigned D = 30;
+const unsigned D = 150;
+
+void inputMatrix(Matrix<double> &m, Matrix<double> &n) {
+    for (unsigned i = 0; i < D; ++i) {
+        for (unsigned j = 0; j < D; ++j) {
+            cin >> m[i][j];
+        }
+    }
+
+    for (unsigned i = 0; i < D; ++i) {
+        for (unsigned j = 0; j < D; ++j) {
+            cin >> n[i][j];
+        }
+    }
+
+    return;
+}
 
 void AccurateTest() {
 
@@ -47,20 +64,12 @@ void AccurateTest() {
 }
 
 void testWithPrint() {
+    ios::sync_with_stdio(false);
     srand((unsigned)time(NULL));
 
     Matrix<double> m = Matrix<double>::rand(D, D);
     Matrix<double> n = Matrix<double>::rand(D, D);
-    // for (unsigned i = 0; i < D; ++i) {
-    //     for (unsigned j = 0; j < D; ++j) {
-    //         // cin >> m[i][j];
-    //     }
-    // }
-    // for (unsigned i = 0; i < D; ++i) {
-    //     for (unsigned j = 0; j < D; ++j) {
-    //         // cin >> n[i][j];
-    //     }
-    // }
+
     cout << "print" << endl;
     cout << m << endl;
     cout << n << endl;
@@ -77,9 +86,9 @@ void testWithPrint() {
     cout << "operator -" << endl;
     cout << m - n << endl;
 
-    
+
     cout << "operator *" << endl;
-    cout << m * n << endl;
+    cout << m *n << endl;
     cout << "operator /" << endl;
     cout << m / n << endl;
     cout << "operator %" << endl;
@@ -106,23 +115,33 @@ void testWithPrint() {
     cout << m.cond2() << endl;
     cout << "eye" << endl;
     cout << Matrix<double>::eye(D, D) << endl;
+    cout << "randn" << endl;
+    cout << Matrix<double>::randn(5, 10) << endl;
+    ios::sync_with_stdio(true);
 }
 
 void testRandnWithMap() {
     std::map<int, int> hist;
+
     for (int n = 0; n < 10000; ++n) {
         // cout << Matrix<double>::randn() << endl;
         ++hist[std::round(Matrix<double>::randn())];
     }
+
     for (auto p : hist) {
         std::cout << std::fixed << std::setprecision(1) << std::setw(2)
-                  << p.first << ' ' 
+                  << p.first << ' '
                   << std::string(p.second / 200, '*') << '\n';
     }
 }
 
 void test() {
-    cout << Matrix<double>::randn(5, 10) << endl;
+    Matrix<double> m = Matrix<double>::rand(D, D);
+
+    cout << m.max() << endl;
+    cout << m.min() << endl;
+    cout << m.avg() << endl;
+    return;
 }
 
 int main() {
@@ -132,7 +151,7 @@ int main() {
 
     testWithPrint();
     // testRandnWithMap();
-    // test();
+    test();
     // AccurateTest();
 
     return 0;
