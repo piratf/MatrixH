@@ -22,12 +22,12 @@ namespace piratfMatrixH {
     using vecSizeT = size_t;
 
     // 单例随机数生成器
-    std::mt19937 *_genPtr;
+    static std::mt19937 *_genPtr;
 
-    std::normal_distribution<double> normDis(0, 1);
-    std::uniform_real_distribution<double> unifDoubleDis(0, 1);
-    std::uniform_real_distribution<float> unifFloatDis(0, 1);
-    std::uniform_int_distribution<int> unifIntDis(0, 65535);
+    static std::normal_distribution<double> normDis(0, 1);
+    static std::uniform_real_distribution<double> unifDoubleDis(0, 1);
+    static std::uniform_real_distribution<float> unifFloatDis(0, 1);
+    static std::uniform_int_distribution<int> unifIntDis(0, 65535);
 
     // 辅助代码
     // =========================================
