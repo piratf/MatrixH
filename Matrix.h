@@ -23,7 +23,6 @@ namespace piratfMatrixH {
 
     // 单例随机数生成器
     static std::mt19937 *_genPtr;
-
     static std::normal_distribution<double> normDis(0, 1);
     static std::uniform_real_distribution<double> unifDoubleDis(0, 1);
     static std::uniform_real_distribution<float> unifFloatDis(0, 1);
@@ -901,7 +900,7 @@ namespace piratfMatrixH {
             return static_cast<T>(0);
         }
 
-        T sum;
+        T sum = 0;
 
         for (vecSizeT i = 0; i < data.size(); ++i) {
             for (vecSizeT j = 0; j < data[0].size(); ++j) {
@@ -1197,8 +1196,8 @@ namespace piratfMatrixH {
 #endif
 
         if (re - rs == 2 && ce - cs == 2) {
-            vecSizeT rs1 = -~rs;
-            vecSizeT cs1 = -~cs;
+            vecSizeT rs1 = rs + 1;
+            vecSizeT cs1 = cs + 1;
             T P1 = data[rs][cs] * (other[rs][cs1] - other[rs1][cs1]);
             T P2 = (data[rs][cs] + data[rs][cs1]) * other[rs1][cs1];
             T P3 = (data[rs1][cs] + data[rs1][cs1]) * other[rs][cs];
@@ -1240,7 +1239,7 @@ namespace piratfMatrixH {
         assert(!empty());
 #endif
         assert(re < row() && rs >= 0 && ce < col() && cs >= 0);
-        Matrix<T> ret(-~re - rs, -~ce - cs);
+        Matrix<T> ret((re + 1) - rs, (ce + 1) - cs);
 
         for (vecSizeT i = rs, ri = 0; i <= re; ++i, ++ri) {
             for (vecSizeT j = cs, rj = 0; j <= ce; ++j, ++rj) {

@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <iosfwd>
 #include <complex>
 #include <map>
@@ -11,7 +13,7 @@ using namespace pmh;
 
 // 矩阵大小
 // 超过 100 以后在普通电脑上求逆和除法会比较慢
-const unsigned D = 80;
+const unsigned D = 20;
 
 void inputMatrix(Matrix<double> &m, Matrix<double> &n) {
     for (unsigned i = 0; i < D; ++i) {
@@ -155,4 +157,4 @@ int main() {
     // AccurateTest();
 
     return 0;
-}
+}   
