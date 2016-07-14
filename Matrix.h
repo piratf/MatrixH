@@ -18,10 +18,9 @@ using std::endl;
 
 namespace piratfMatrixH {
 
-
     using vecSizeT = size_t;
 
-    // 单例随机数生成器
+    // 单线程随机数生成器，使用 setRand
     static std::mt19937 *_genPtr;
     static std::normal_distribution<double> normDis(0, 1);
     static std::uniform_real_distribution<double> unifDoubleDis(0, 1);
@@ -172,10 +171,11 @@ namespace piratfMatrixH {
         Matrix<T> inline operator += (const Matrix<T> &other);
         Matrix<T> inline operator -= (const Matrix<T> &other);
         Matrix<double> inline operator /= (const Matrix<T> &other);
+
         /**
         * 矩阵快速幂
-        * 参数需要一个当前类类型成员，需要使用 friend 实现
-        * 友元模板的原因需要在声明处实现
+        * 参数需要一个当前类类型成员，出于泛型考虑使用 friend 实现
+        * 友元模板实现
         */
         friend Matrix<T> inline operator ^ (const Matrix<T> &mat, unsigned exponent) {
             Matrix<T> ans = eye(mat.row(), mat.col());
@@ -193,7 +193,7 @@ namespace piratfMatrixH {
         }
 
         /**
-        * 友元模板的原因需要放在声明处实现
+        * 友元模板实现
         */
         friend std::ostream &operator << (std::ostream &o, const Matrix<T> &mat) {
             // 判断要输出的数是否是 double 类型
